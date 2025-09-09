@@ -130,29 +130,15 @@ def main():
     k_value = 2
     print(f"Running Lukes' partitioning algorithm for k={k_value}...")
 
-    # The lukes_partitioning algorithm requires integer weights.
-    weight = np.ones(mst.number_of_nodes(), dtype=int)
-    weight[1:10] = 2
-
-    # Assign weights to nodes as an attribute. The `node_weight` parameter for
-    # `lukes_partitioning` is a string that refers to the node attribute key.
-    node_weights = {node: int(weight[i]) for i, node in enumerate(mst.nodes())}
-    nx.set_node_attributes(mst, node_weights, name="weight")
+    weight = np.ones(mst.number_of_nodes())
+    weight[1:10]=2
 
     npartition = 2
     
     try:
         # Check if the graph is k-edge-connected before running the algorithm
         if nx.is_k_edge_connected(G, k_value):
-            # The second argument to lukes_partitioning is `max_size`, not the
-            # number of partitions. We'll calculate a reasonable max_size to
-            # aim for roughly `npartition` partitions.
-            total_weight = sum(weight)
-            max_size = total_weight // npartition
-
-            partitions = list(nx.algorithms.community.lukes.lukes_partitioning(
-                mst, max_size, node_weight="weight"
-            ))
+            partitions = list(nx.algorithms.community.lukes.lukes_partitioning(mst, npartition, node_weight=weight))
             print(f"Found {len(partitions)} partition(s).")
         else:
             print(f"Graph is not {k_value}-edge-connected. Partitioning is not possible for this k.")
