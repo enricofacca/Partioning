@@ -5,7 +5,7 @@ import numpy as np
 import pymetis
 import matplotlib.pyplot as plt
 
-def visualize_partitions(G, partitions, pos):
+def visualize_partitions(G, partitions, pos, weights):
     """
     Visualizes the graph partitions using matplotlib.
 
@@ -14,6 +14,7 @@ def visualize_partitions(G, partitions, pos):
         partitions (list): A list of lists, where each inner list contains
                            the nodes of a partition.
         pos (dict): A dictionary mapping nodes to their positions.
+        weights (dict): A dictionary mapping nodes to their weights.
     """
     plt.figure(figsize=(12, 12))
 
@@ -21,18 +22,20 @@ def visualize_partitions(G, partitions, pos):
     n_parts = len(partitions)
     color_map = plt.get_cmap('viridis', n_parts)
 
-    # Create a mapping from node to its color
+    # Create mappings for node colors and sizes
     node_colors = {}
+    node_sizes = {}
     for i, part in enumerate(partitions):
         for node in part:
             node_colors[node] = color_map(i)
+            node_sizes[node] = weights.get(node, 1) * 150 # Base size * weight
 
     # Draw the graph
     nx.draw(
         G,
         pos,
         with_labels=True,
-        node_size=400,
+        node_size=[node_sizes.get(node, 150) for node in G.nodes()],
         node_color=[node_colors.get(node, 'gray') for node in G.nodes()],
         font_size=8,
         font_color='white'
@@ -89,7 +92,9 @@ def partition_grid_graph(nx_dim, ny_dim, n_parts, plot=False):
     # 6. Visualize if requested
     if plot:
         pos = {(x, y): (x, -y) for x, y in G.nodes()}
-        visualize_partitions(G, partitions, pos)
+        # Create a dictionary of weights for the visualizer
+        weight_dict = {node: weights[node_to_idx[node]] for node in G.nodes()}
+        visualize_partitions(G, partitions, pos, weight_dict)
 
     return partitions, cuts
 
@@ -149,7 +154,9 @@ def partition_grid_graph_unique_ids(nx_dim, ny_dim, n_parts, plot=False):
     # 7. Visualize if requested
     if plot:
         pos = {node_id: (node_id // ny_dim, -(node_id % ny_dim)) for node_id in G.nodes()}
-        visualize_partitions(G, partitions, pos)
+        # Create a dictionary of weights for the visualizer
+        weight_dict = {node_id: weights[node_id] for node_id in G.nodes()}
+        visualize_partitions(G, partitions, pos, weight_dict)
 
     return partitions, cuts
 
