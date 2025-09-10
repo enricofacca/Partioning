@@ -3,8 +3,46 @@ import unittest
 import networkx as nx
 import numpy as np
 import pymetis
+import matplotlib.pyplot as plt
 
-def partition_grid_graph(nx_dim, ny_dim, n_parts):
+def visualize_partitions(G, partitions, pos):
+    """
+    Visualizes the graph partitions using matplotlib.
+
+    Args:
+        G (networkx.Graph): The graph.
+        partitions (list): A list of lists, where each inner list contains
+                           the nodes of a partition.
+        pos (dict): A dictionary mapping nodes to their positions.
+    """
+    plt.figure(figsize=(12, 12))
+
+    # Generate a color for each partition
+    n_parts = len(partitions)
+    color_map = plt.get_cmap('viridis', n_parts)
+
+    # Create a mapping from node to its color
+    node_colors = {}
+    for i, part in enumerate(partitions):
+        for node in part:
+            node_colors[node] = color_map(i)
+
+    # Draw the graph
+    nx.draw(
+        G,
+        pos,
+        with_labels=True,
+        node_size=400,
+        node_color=[node_colors.get(node, 'gray') for node in G.nodes()],
+        font_size=8,
+        font_color='white'
+    )
+
+    plt.title("Graph Partitioning")
+    plt.show()
+
+
+def partition_grid_graph(nx_dim, ny_dim, n_parts, plot=False):
     """
     Creates a 2D grid graph, assigns weights, and partitions it using pymetis.
     """
@@ -47,10 +85,15 @@ def partition_grid_graph(nx_dim, ny_dim, n_parts):
     for i, part in enumerate(partitions):
         print(f"  Partition {i}: {part}")
 
+    # 6. Visualize if requested
+    if plot:
+        pos = {(x, y): (x, -y) for x, y in G.nodes()}
+        visualize_partitions(G, partitions, pos)
+
     return partitions, cuts
 
 
-def partition_grid_graph_unique_ids(nx_dim, ny_dim, n_parts):
+def partition_grid_graph_unique_ids(nx_dim, ny_dim, n_parts, plot=False):
     """
     Creates a 2D grid graph with unique integer nodes and partitions it.
     """
@@ -100,6 +143,11 @@ def partition_grid_graph_unique_ids(nx_dim, ny_dim, n_parts):
     print(f"Partitioning complete. Number of edge cuts: {cuts}")
     for i, part in enumerate(partitions):
         print(f"  Partition {i}: {part}")
+
+    # 7. Visualize if requested
+    if plot:
+        pos = {node_id: (node_id // ny_dim, -(node_id % ny_dim)) for node_id in G.nodes()}
+        visualize_partitions(G, partitions, pos)
 
     return partitions, cuts
 
@@ -162,6 +210,9 @@ def main():
         action="store_true",
         help="Use unique integer IDs for nodes instead of tuples.",
     )
+    parser.add_argument(
+        "--plot", action="store_true", help="Show a plot of the partitions."
+    )
     args = parser.parse_args()
 
     if args.test:
@@ -170,9 +221,9 @@ def main():
         runner = unittest.TextTestRunner()
         runner.run(suite)
     elif args.use_unique_ids:
-        partition_grid_graph_unique_ids(args.nx, args.ny, args.n_parts)
+        partition_grid_graph_unique_ids(args.nx, args.ny, args.n_parts, plot=args.plot)
     else:
-        partition_grid_graph(args.nx, args.ny, args.n_parts)
+        partition_grid_graph(args.nx, args.ny, args.n_parts, plot=args.plot)
 
 if __name__ == "__main__":
     main()
