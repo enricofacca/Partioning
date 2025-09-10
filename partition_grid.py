@@ -83,7 +83,8 @@ def partition_grid_graph(nx_dim, ny_dim, n_parts, plot=False):
 
     print(f"Partitioning complete. Number of edge cuts: {cuts}")
     for i, part in enumerate(partitions):
-        print(f"  Partition {i}: {part}")
+        part_weight = sum(weights[node_to_idx[node]] for node in part)
+        print(f"  Partition {i}: Total Weight = {part_weight}, Nodes = {part}")
 
     # 6. Visualize if requested
     if plot:
@@ -142,7 +143,8 @@ def partition_grid_graph_unique_ids(nx_dim, ny_dim, n_parts, plot=False):
 
     print(f"Partitioning complete. Number of edge cuts: {cuts}")
     for i, part in enumerate(partitions):
-        print(f"  Partition {i}: {part}")
+        part_weight = sum(weights[node_id] for node_id in part)
+        print(f"  Partition {i}: Total Weight = {part_weight}, Nodes = {part}")
 
     # 7. Visualize if requested
     if plot:
