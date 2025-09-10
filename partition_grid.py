@@ -22,15 +22,13 @@ def visualize_partitions(G, partitions, pos, weights):
     n_parts = len(partitions)
     color_map = plt.get_cmap('viridis', n_parts)
 
-    # Create mappings for node colors, sizes, and labels
+    # Create mappings for node colors and labels
     node_colors = {}
-    node_sizes = {}
     labels = {}
     for i, part in enumerate(partitions):
         part_weight = sum(weights.get(node, 1) for node in part)
         for node in part:
             node_colors[node] = color_map(i)
-            node_sizes[node] = weights.get(node, 1) * 150 # Base size * weight
             labels[node] = f"({part_weight}, {weights.get(node, 1)})"
 
     # Draw the graph
@@ -39,7 +37,7 @@ def visualize_partitions(G, partitions, pos, weights):
         pos,
         labels=labels,
         with_labels=True,
-        node_size=[node_sizes.get(node, 150) for node in G.nodes()],
+        node_size=500,
         node_color=[node_colors.get(node, 'gray') for node in G.nodes()],
         font_size=8,
         font_color='black'
