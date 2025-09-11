@@ -54,18 +54,44 @@ def partition_array(weight_array, n_parts):
     return partition_matrix
 
 
-def visualize_array_partitions(partition_matrix):
+def visualize_array_partitions(partition_matrix, weight_array):
     """
     Visualizes the partitioned array using matplotlib.
 
     Args:
         partition_matrix (np.ndarray): A 2D array where each cell's value
                                        is its partition number.
+        weight_array (np.ndarray): The original 2D array of weights.
     """
     plt.figure(figsize=(10, 10))
     # Use imshow to display the 2D array as a colored grid.
-    # The 'viridis' colormap is good for this kind of categorical data.
     plt.imshow(partition_matrix, cmap='viridis', interpolation='nearest')
+
+    # Add text labels for the total weight at the barycenter of each partition
+    n_parts = np.max(partition_matrix) + 1
+    for part_num in range(n_parts):
+        # Find the coordinates of the cells in the current partition
+        coords = np.argwhere(partition_matrix == part_num)
+        if coords.size == 0:
+            continue
+
+        # Calculate the barycenter (centroid)
+        barycenter_y, barycenter_x = coords.mean(axis=0)
+
+        # Calculate the total weight of the partition
+        total_weight = weight_array[coords[:, 0], coords[:, 1]].sum()
+
+        # Add the text label
+        plt.text(
+            barycenter_x,
+            barycenter_y,
+            str(total_weight),
+            color='white',
+            ha='center',
+            va='center',
+            fontsize=12,
+            fontweight='bold'
+        )
 
     plt.title("Array Partitions")
     plt.colorbar(label="Partition Number")
@@ -104,7 +130,7 @@ def main():
     partition_matrix = partition_array(weights, args.n_parts)
 
     # Visualize the result
-    visualize_array_partitions(partition_matrix)
+    visualize_array_partitions(partition_matrix, weights)
 
 if __name__ == "__main__":
     main()
