@@ -2,6 +2,41 @@ import argparse
 import unittest
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+def visualize_transformation(cell_graph, unique_vertices):
+    """
+    Visualizes the cell graph and its vertex representation.
+
+    Args:
+        cell_graph (networkx.Graph): The graph of active cells.
+        unique_vertices (list): The list of unique corner vertices.
+    """
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    # 1. Draw the cells as patches
+    for r, c in cell_graph.nodes():
+        # A cell at (r,c) has its top-left corner at (c, -r-1) in plot coordinates
+        rect = patches.Rectangle((c, -r-1), 1, 1, linewidth=1, edgecolor='gray', facecolor='lightblue', alpha=0.5)
+        ax.add_patch(rect)
+
+    # 2. Draw the cell graph edges
+    # We need a pos dictionary for networkx to draw the edges
+    pos = {node: (node[1] + 0.5, -node[0] - 0.5) for node in cell_graph.nodes()}
+    nx.draw_networkx_edges(cell_graph, pos, ax=ax, edge_color='red', width=2)
+
+    # 3. Draw the unique vertices
+    if unique_vertices:
+        vx, vy = zip(*unique_vertices)
+        # Invert the y-axis for grid-like display
+        ax.scatter(vx, [-y for y in vy], c='black', s=50, zorder=5)
+
+    ax.set_aspect('equal', adjustable='box')
+    ax.set_title("Cell Graph and Vertex Representation")
+    plt.gca().invert_yaxis()
+    plt.show()
+
 
 def build_graph_from_array(array):
     """
@@ -104,6 +139,9 @@ def main():
     parser.add_argument(
         "--test", action="store_true", help="Run the built-in unit tests."
     )
+    parser.add_argument(
+        "--plot", action="store_true", help="Show a plot of the results."
+    )
     args = parser.parse_args()
 
     if args.test:
@@ -138,6 +176,10 @@ def main():
         print("\n2. List of Unique Vertex Coordinates:")
         print(f"  Total unique vertices: {len(unique_vertices)}")
         print(f"  Coordinates: {unique_vertices}")
+
+        # 4. Plot if requested
+        if args.plot:
+            visualize_transformation(cell_graph, unique_vertices)
 
 
 if __name__ == "__main__":
